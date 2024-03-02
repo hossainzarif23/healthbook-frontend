@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 const DoctorProfile = () => {
   const navigate = useNavigate();
 
@@ -23,6 +26,60 @@ const DoctorProfile = () => {
     rating: null,
   });
 
+  const [userRating, setUserRating] = useState(0);
+  const [myRating, setMyRating] = useState(0);
+  const [rated, isRated] = useState(false);
+
+  const handleRatingSelection = async(rating) => {
+    if (userRating === rating) {
+      rating = 0;
+    }
+    console.log(rating)
+    setUserRating(rating);
+    // console.log(rating);
+    submitRating(rating);
+  };
+
+  const submitRating = async (rating) => {
+    console.log(rating);
+    try {
+      if (!rated && rating > 0) {
+        const response = await axios.post(
+          'http://localhost:8000/patients/add-rating',
+          {
+            patient: localStorage.getItem('username'),
+            doctor: doctorData.username,
+            rating: rating,
+          }
+        );
+        console.log(response.data);
+      }
+
+      else if (rated && userRating > 0) {
+        const response = await axios.patch(
+          'http://localhost:8000/patients/update-rating',
+          {
+            patient: localStorage.getItem('username'),
+            doctor: doctorData.username,
+            rating: rating,
+          }
+        );
+        console.log(response.data);
+      }
+
+      else if (rated && userRating === 0) {
+        const response = await axios.delete(
+          `http://localhost:8000/patients/delete-rating?patient=${localStorage.getItem('username')}&doctor=${doctorData.username}`
+        );
+        console.log(response.data);
+      }
+      setMyRating(rating);
+      // Optionally, you can update the displayed rating immediately after successful submission
+    } catch (error) {
+      console.error('Error adding rating:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,6 +94,19 @@ const DoctorProfile = () => {
         const response2 = await axios.get(
           `http://localhost:8000/doctors/rating?doctor=${username}`
         );
+
+        const response3 = await axios.get(
+          `http://localhost:8000/patients/get-rating?patient=${requestingUsername}&doctor=${username}`
+        );
+
+        if (response3.data.responseCode === 200) {
+          setUserRating(response3.data.rating.rating);
+          isRated(true);
+        }
+        else {
+          setUserRating(0);
+          isRated(false);
+        }
         console.log(response.data);
         console.log(response2.data.rating);
         const { doctor } = response.data;
@@ -59,7 +129,7 @@ const DoctorProfile = () => {
     };
 
     fetchData();
-  }, []);
+  }, [myRating]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-transparent">
@@ -126,6 +196,21 @@ const DoctorProfile = () => {
             </button>
           </div>
         )}
+
+        <div className="mb-4">
+          <div>
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <span
+                key={rating}
+                className={`star text-xl cursor-pointer inline-block text-red ${userRating !== 0 && userRating >= rating ? 'text-brown' : ''}`}
+                onClick={() => handleRatingSelection(rating)}
+              >
+                <FontAwesomeIcon icon={faStar} />
+              </span>
+            ))}
+          </div>
+        </div>
+
         <div className="flex justify-center mt-4">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
