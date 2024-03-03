@@ -98,9 +98,9 @@ const PostsList = () => {
       </div>
 
       <div className="flex flex-wrap m-4">
-        {posts.map((post) => (
-          <PostPageNew key={post.id} post={post} />
-        ))}
+        {posts
+          ? posts.map((post) => <PostPageNew key={post.id} post={post} />)
+          : "No posts available"}
       </div>
     </>
   );

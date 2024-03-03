@@ -196,20 +196,22 @@ const DoctorProfile = () => {
             </button>
           </div>
         )}
-
-        <div className="mb-4">
-          <div>
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <span
-                key={rating}
-                className={`star text-xl cursor-pointer inline-block text-red ${userRating !== 0 && userRating >= rating ? 'text-brown' : ''}`}
-                onClick={() => handleRatingSelection(rating)}
-              >
-                <FontAwesomeIcon icon={faStar} />
-              </span>
-            ))}
+        
+        {localStorage.getItem("userRole") === 'patient' && (
+          <div className="mb-4">
+            <div>
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <span
+                  key={rating}
+                  className={`star text-xl cursor-pointer inline-block text-red ${userRating !== 0 && userRating >= rating ? 'text-brown' : ''}`}
+                  onClick={() => handleRatingSelection(rating)}
+                >
+                  <FontAwesomeIcon icon={faStar} />
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex justify-center mt-4">
           <button

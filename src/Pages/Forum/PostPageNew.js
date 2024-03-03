@@ -10,6 +10,8 @@ function truncateByWord(str, numWords) {
 const PostPageNew = ({ post }) => {
   const navigate = useNavigate();
 
+  console.log(post.cover_images[0].image_path)
+
   const [posts, setPosts] = useState([]);
   const handleClick = () => {
     console.log("Post clicked");
@@ -36,7 +38,7 @@ const PostPageNew = ({ post }) => {
     
     <div className="p-4 w-full md:w-1/2 lg:w-1/3">
   <article className="border rounded-lg overflow-hidden h-full flex flex-col" onClick={handleClick}>
-    <img src={post.image} alt={post.title} className="w-full h-48 object-cover" />
+    <img src={`http://localhost:8000/${post.cover_images[0].image_path}`} alt={post.title} className="w-full h-48 object-cover" />
     <div className="p-4 flex-grow">
       <h2 className="text-2xl font-bold">{post.title}</h2>
       <p className="text-sm text-gray-600">{post.content.substring(0, 100)}</p>

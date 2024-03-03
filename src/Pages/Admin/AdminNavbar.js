@@ -29,8 +29,8 @@ const AdminNavbar = ({ isAuthenticated, onLogout }) => {
           <Link to="/verifydoctor" className="hover:text-red-500 mr-8 text-2xl">
             Verify Doctor
           </Link>
-          <Link to="/currentMedication" className="hover:text-red-500 text-2xl">
-            Current Medication
+          <Link to="/download-data" className="hover:text-red-500 text-2xl">
+            Download Data
           </Link>
           <Link to ="/addtreatment" className="hover:text-red-500 text-2xl ml-8">Add Treatment</Link>
         </div>

@@ -56,6 +56,9 @@ import AdminNavbar from "./Pages/Admin/AdminNavbar";
 import AdminSidebar from "./Pages/Admin/AdminSidebar";
 import VerifyDoctor from "./Pages/Admin/Doctor/VerifyDoctor";
 
+// download data
+import DownloadData from "./Pages/Admin/Data/DataDownload";
+
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -191,6 +194,9 @@ const App = () => {
             {/* admin routes */}
             <Route path="/adminlogin" element={<AdminLogin setIsAuthenticated={setIsAuthenticated}/>} />
             <Route path="/verifydoctor" element={<VerifyDoctor />} />
+
+            {/* download data */}
+            <Route path="/download-data" element={<DownloadData />} />
             {/* } />
       doctorprofileview
       <Route path="/HealthAnalysis" element={<HealthAnalysis />} />
