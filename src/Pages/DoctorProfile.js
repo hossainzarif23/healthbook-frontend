@@ -27,7 +27,7 @@ const DoctorProfile = () => {
   });
 
   const [userRating, setUserRating] = useState(0);
-  const [myRating, setMyRating] = useState(0);
+  const [myRating, setMyRating] = useState(-1);
   const [rated, isRated] = useState(false);
 
   const handleRatingSelection = async(rating) => {
@@ -55,7 +55,7 @@ const DoctorProfile = () => {
         console.log(response.data);
       }
 
-      else if (rated && userRating > 0) {
+      else if (rated && rating > 0) {
         const response = await axios.patch(
           'http://localhost:8000/patients/update-rating',
           {
@@ -67,7 +67,8 @@ const DoctorProfile = () => {
         console.log(response.data);
       }
 
-      else if (rated && userRating === 0) {
+      else if (rated && rating === 0) {
+        console.log(doctorData)
         const response = await axios.delete(
           `http://localhost:8000/patients/delete-rating?patient=${localStorage.getItem('username')}&doctor=${doctorData.username}`
         );

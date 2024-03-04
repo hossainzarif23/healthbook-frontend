@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -16,11 +16,26 @@ function formatDate(dateString) {
 }
 
 const PostDetail = () => {
+  const location = useLocation();
+
+  if (location.search) {
+    // console.log(location.state.post)
+    console.log(location.search);
+    const searchParams = new URLSearchParams(location.search);
+    console.log(searchParams.get("postreport_id"));
+  }
+  
+  console.log(location)
   const [post, setPost] = useState(null);
   const { id } = useParams();
   const [comment, setComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [activeOptionsId, setActiveOptionsId] = useState(null);
+  const [activeReportFormId, setActiveReportFormId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -53,7 +68,15 @@ const PostDetail = () => {
   }
   const isUserAuthor = localStorage.getItem('username') === post.author;
 
-
+  const handleToggleOptions = (commentId) => {
+    if (activeOptionsId === commentId) {
+      setActiveOptionsId(null); // Hide options if they're already showing for this comment
+    } else {
+      setActiveOptionsId(commentId);
+      setActiveReportFormId(null); // Ensure the report form is hidden when showing options
+    }
+    setShowOptions(!showOptions);
+  };
 
   const handleUpvote = async (commentId) => {
     // Find the index of the comment to be updated
@@ -158,6 +181,79 @@ const PostDetail = () => {
     }
   };
 
+  const handlePostUpvote = async (postId) => {
+    if (post.hasVoted) {
+      console.log("User has already voted on this post.");
+      return; // Stop execution if already voted
+    }
+
+    // Proceed with upvote since the user hasn't voted yet
+    const updatedPost = {
+      ...post,
+      upvotes: post.upvotes + 1, // Increment upvotes
+      hasVoted: true, // Mark as voted
+    };
+
+    setPost(updatedPost); // Update the post state
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/forum/upvote-downvote",
+        {
+          user: localStorage.getItem("username"),
+          post: postId,
+          is_upvote: 1,
+        }
+      );
+      // Handle response or update UI further based on success
+    } catch (error) {
+      console.error("Error upvoting post:", error);
+      // Revert the optimistic UI update if necessary
+      setPost({
+        ...post,
+        upvotes: post.upvotes - 1,
+        hasVoted: false, // Revert hasVoted flag
+      });
+    }
+  };
+
+  const handlePostDownvote = async (postId) => {
+    // Check if the user has already voted on the post
+    if (post.hasVoted) {
+      console.log("User has already voted on this post.");
+      return; // Stop execution if already voted
+    }
+
+    // Proceed with downvote since the user hasn't voted yet
+    const updatedPost = {
+      ...post,
+      downvotes: post.downvotes + 1, // Increment downvotes
+      hasVoted: true, // Mark as voted
+    };
+
+    setPost(updatedPost); // Update the post state
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/forum/upvote-downvote",
+        {
+          user: localStorage.getItem("username"),
+          post: postId,
+          is_upvote: 0, // Indicate a downvote
+        }
+      );
+      // Handle response or update UI further based on success
+    } catch (error) {
+      console.error("Error downvoting post:", error);
+      // Revert the optimistic UI update if necessary
+      setPost({
+        ...post,
+        downvotes: post.downvotes - 1,
+        hasVoted: false, // Revert hasVoted flag
+      });
+    }
+  };
+
   const handleComment = async () => {
 
     try {
@@ -192,8 +288,6 @@ const PostDetail = () => {
     }
     console.log();
   };
-
-
 
   const handleCancelEdit = () => {
     setEditingCommentId(null);
@@ -256,26 +350,101 @@ const PostDetail = () => {
           },
         }
       );
-      navigate("/posts");
+      if (location.search && new URLSearchParams(location.search).get("postreport_id") !== null) {
+        navigate(-1)
+      }
+      else {
+        navigate("/posts");
+      }
       console.log(response.data);
     } catch (error) {
       console.error("Error deleting post:", error);
     }
   };
+
+  const handleIgnore = async () => {
+    // console.log('Ignore Button Clicked')
+    const response = await axios.delete(
+      "http://localhost:8000/forum/delete-report-post",
+      {
+        data: {
+          id: new URLSearchParams(location.search).get("postreport_id"), // Assuming 'id' is defined in the component's scope
+        },
+      }
+    );
+    navigate(-1)
+  }
+
+  const handleReportSubmit = async (e, id) => {
+    e.preventDefault();
+    console.log(id);
+    console.log(
+      "Report submitted for comment ID:",
+      id,
+      "Reason:",
+      reportReason
+    );
+    const response = await axios.post(
+      "http://localhost:8000/forum/report-comment",
+      {
+        comment: id,
+        reason: reportReason,
+        user: localStorage.getItem("username"),
+      }
+    );
+    console.log(response.data);
+    setActiveReportFormId(null); // Hide the report form
+    setReportReason("");
+    setShowReportForm(false);
+  };
+
+  const handleCancelReport = () => {
+    setActiveReportFormId(null); // Hide the report form
+    setReportReason("");
+    setShowReportForm(false);
+  };
+
+  const handlePostReportSubmit = async (e, id) => {
+    e.preventDefault();
+   
+    const response = await axios.post(
+      "http://localhost:8000/forum/report-post",
+      {
+        post: id,
+        reason: reportReason,
+        user: localStorage.getItem("username"),
+      }
+    );
+    console.log(response.data);
+    setActiveReportFormId(null); // Hide the report form
+    setReportReason("");
+    setShowReportForm(false);
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-8">
         <div className="flex justify-between items-center mt-10 mb-2">
           <h1 className="text-4xl font-bold">{post.title}</h1>
+          <div>
+            {(isUserAuthor || (localStorage.getItem('userRole') === 'admin' && location.search && new URLSearchParams(location.search).get("postreport_id") !== null)) && (
+              <button
+                onClick={handleDelete}
+                className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+              >
+                Delete
+              </button>
+            )}
 
-          {isUserAuthor && (
-            <button
-              onClick={handleDelete}
-              className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
-            >
-              Delete
-            </button>
-          )}
+            {localStorage.getItem('userRole') === 'admin' && location.search && new URLSearchParams(location.search).get("postreport_id") !== null && (
+              <button
+                onClick={handleIgnore}
+                className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+              >
+                Ignore
+              </button>
+            )}
+          </div>
         </div>
         <p className="text-md text-gray-600">
           by {post.author} on {new Date(post.date).toLocaleDateString()}
@@ -299,7 +468,61 @@ const PostDetail = () => {
         </div>
       </div>
 
+      <div className="flex gap-4 items-center mb-4">
+        {/* Like button */}
+        <button
+          onClick={() => handlePostUpvote(post.id)}
+          className="flex items-center px-3 py-1 bg-gray-200 rounded hover:bg-blue-300"
+        >
+          <span className="icon thumbs-up">👍</span>
+          <span className="ml-1">{post.upvotes}</span>
+        </button>
+        {/* Dislike button */}
+        <button
+          onClick={() => handlePostDownvote(post.id)}
+          className="flex items-center px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          <span className="icon thumbs-down">👎</span>
+          <span className="ml-1">{post.downvotes}</span>
+        </button>
 
+        <button
+          onClick={() => handleToggleOptions(post.id)}
+          className="flex items-center px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          <span className="text-xl">⋮</span>
+        </button>
+
+        {/* Report form */}
+        {activeOptionsId === post.id && (
+          <form
+            onSubmit={(e) => handlePostReportSubmit(e, post.id)}
+            className="w-80 bg-white shadow-lg rounded p-4 mt-2 ml-90"
+          >
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="Reason for reporting"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                type="button"
+                onClick={handleCancelReport}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       <div className="comments-section mt-10">
         <h2 className="text-2xl font-semibold mb-4">Comments</h2>
@@ -336,7 +559,12 @@ const PostDetail = () => {
               ) : (
                 <>
 
-                  <p className="text-md mb-1">{comment.author} : {comment.content}</p>
+                  <p className="text-md mb-1">
+                    {comment.author} @ {formatDate(comment.update_date)}
+                    {/* {comment.author} @ {comment.update_date} */}
+                    <br />
+                    {comment.content}
+                  </p>
 
                   <div className="flex gap-4 items-center mb-4">
                     {/* Like button */}
@@ -370,6 +598,45 @@ const PostDetail = () => {
                       <span>Delete</span>
 
                     </button>
+
+                    {/* Three dots button */}
+                    <button
+                      onClick={() => handleToggleOptions(comment.id)}
+                      className="flex items-center px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    >
+                      <span className="text-xl">⋮</span>
+                    </button>
+
+                    {/* Report form */}
+                    {activeOptionsId === comment.id && (
+                      <form
+                        onSubmit={(e) => handleReportSubmit(e, comment.id)}
+                        className="w-80 bg-white shadow-lg rounded p-4 mt-2 ml-90"
+                      >
+                        <textarea
+                          className="w-full p-2 border border-gray-300 rounded"
+                          placeholder="Reason for reporting"
+                          value={reportReason}
+                          onChange={(e) => setReportReason(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={handleCancelReport}
+                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  
                   </div>
                 </>
               )}

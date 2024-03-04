@@ -4,14 +4,11 @@ import { Container, Typography, Grid, IconButton } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-const PatientAnalysis = () => {
+const GeneralAnalysis = () => {
 
-    // const [data, setData] = useState(null);
     const [imageSrc1, setImageSrc1] = useState(null);
     const [imageSrc2, setImageSrc2] = useState(null);
     const [imageSrc3, setImageSrc3] = useState(null);
-    const [recurringDiseases, setRecurringDiseases] = useState([]);
-    const [healthSatisfaction, setHealthSatisfaction] = useState(0);
 
     const username = localStorage.getItem('username');
 
@@ -37,29 +34,19 @@ const PatientAnalysis = () => {
     // Next month
     const nextMonthIndex = currentMonthIndex === 11 ? 0 : currentMonthIndex + 1;
     const nextMonth = monthNames[nextMonthIndex];
-
-    console.log('Current month:', currentMonth);
-    console.log('Previous month:', previousMonth);
-    console.log('Next month:', nextMonth);
-
     useEffect(() => {
         let timeoutId;
         const fetchData = async () => {
             try {
-                const response1 = await axios.get(`http://localhost:8000/patients/last-one-year-diseases?patient=${username}`);
+                const response1 = await axios.get(`http://localhost:8000/admins/disease-frequency`);
                 setImageSrc1(response1.data.response.image);
 
-                const response2 = await axios.get(`http://localhost:8000/patients/patient-treatment-success?patient=${username}`);
+                const response2 = await axios.get(`http://localhost:8000/admins/treatment-success`);
                 setImageSrc2(response2.data.response.image);
 
-                const response3 = await axios.get(`http://localhost:8000/patients/patient-doctor-visit?patient=${username}`);
+                const response3 = await axios.get(`http://localhost:8000/admins/patient-satisfaction`);
                 setImageSrc3(response3.data.response.image);
 
-                const recurringDiseasesResponse = await axios.get(`http://localhost:8000/patients/recurring-diseases?patient=${username}`);
-                setRecurringDiseases(recurringDiseasesResponse.data.diseases);
-
-                const healthSatisfactionResponse = await axios.get(`http://localhost:8000/patients/patient-satisfaction?patient=${username}`);
-                setHealthSatisfaction(healthSatisfactionResponse.data.health_satisfaction);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -74,12 +61,14 @@ const PatientAnalysis = () => {
 
         return () => clearTimeout(timeoutId);
     }, [username]);
+
+
     return (
         <Container style={{ paddingTop: '40px' }}>
             <IconButton variant="outlined" onClick={() => navigate(-1)}>
                 <ArrowBackIcon />
             </IconButton>
-            <Grid container spacing={2} alignContent={'center'}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} md={4}>
                     <div style={{ display: 'flex' }}>
                         {imageSrc1 && (
@@ -106,23 +95,8 @@ const PatientAnalysis = () => {
                     </div>
                 </Grid>
             </Grid>
-            <div style={{ paddingTop: '20px' }}>
-                {recurringDiseases.length === 0 ? (
-                    <Typography variant="h6">No Recurring Diseases</Typography>
-                ) : (
-                    <Typography variant="h6">Recurring Diseases:</Typography>
-                )}
-                <ul>
-                    {recurringDiseases.map((disease, index) => (
-                        <li key={index}>{`${disease.disease}: ${disease.count} times between ${previousMonth} and ${nextMonth} in last 3 years`}</li>
-                    ))}
-                </ul>
-            </div>
-            <div style={{ paddingTop: '20px' }}>
-            <Typography variant="h5" style={{ color: 'red' }}>{`Health Satisfaction Score: ${healthSatisfaction}`}</Typography>
-            </div>
         </Container>
     )
 }
 
-export default PatientAnalysis
+export default GeneralAnalysis

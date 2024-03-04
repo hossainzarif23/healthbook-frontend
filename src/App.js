@@ -56,8 +56,15 @@ import AdminNavbar from "./Pages/Admin/AdminNavbar";
 import AdminSidebar from "./Pages/Admin/AdminSidebar";
 import VerifyDoctor from "./Pages/Admin/Doctor/VerifyDoctor";
 
+// Reports
+import ReportedPosts from "./Pages/Admin/Reports/ReportedPosts";
+import PostReportBox from "./Components/Doctor/PostReportBox";
+
 // download data
 import DownloadData from "./Pages/Admin/Data/DataDownload";
+
+// Analysis
+import GeneralAnalysis from "./Pages/Admin/Analysis/GeneralAnalysis";
 
 
 const App = () => {
@@ -197,6 +204,13 @@ const App = () => {
 
             {/* download data */}
             <Route path="/download-data" element={<DownloadData />} />
+
+            {/* Reports */}
+            <Route path="/reported-posts" element={<ReportedPosts />} />
+
+            {/* Analysis */}
+            <Route path="/general-analysis" element={<GeneralAnalysis />} />
+
             {/* } />
       doctorprofileview
       <Route path="/HealthAnalysis" element={<HealthAnalysis />} />

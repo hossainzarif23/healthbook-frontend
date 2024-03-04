@@ -42,7 +42,10 @@ const DoctorSignup = () => {
       console.log(response.data);
       console.log(response.data.responseCode)
       if (response.data.responseCode == 201) {
-        navigate('/login');
+        localStorage.setItem("username", username);
+        localStorage.setItem("userRole",'doctor');
+        localStorage.setItem("isAuthenticated", true);
+        // navigate('/login');
       } else {
         // unsuccessful signup, e.g., username already taken, etc.
         alert("Signup was unsuccessful. Please try again.");

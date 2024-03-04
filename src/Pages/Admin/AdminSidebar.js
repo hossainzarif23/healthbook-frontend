@@ -14,15 +14,15 @@ const AdminSidebar = () => {
     <div className="text-black h-full flex flex-col justify-center items-center">
       <ul className="space-y-8 mt-8"> {/* Increased vertical space */}
         <li>
-          <Link to="/FindDoctor" className={`flex items-center space-x-2 hover:text-gray-300 ${activeMenu === 'FindDoctor' ? 'text-rose-500' : ''}`} onClick={() => handleMenuClick('FindDoctor')}>
+          <Link to="/reported-posts" className={`flex items-center space-x-2 hover:text-gray-300 ${activeMenu === 'FindDoctor' ? 'text-rose-500' : ''}`} onClick={() => handleMenuClick('FindDoctor')}>
             <MdPersonSearch size={iconSize} />
-            <span className="text-2xl">Find Doctor</span>
+            <span className="text-2xl">Reported Posts</span>
           </Link>
         </li>
         <li>
-          <Link to="/HealthAnalysis" className={`flex items-center space-x-2 hover:text-gray-300 ${activeMenu === 'HealthAnalysis' ? 'text-rose-500' : ''}`} onClick={() => handleMenuClick('HealthAnalysis')}>
+          <Link to="/general-analysis" className={`flex items-center space-x-2 hover:text-gray-300 ${activeMenu === 'HealthAnalysis' ? 'text-rose-500' : ''}`} onClick={() => handleMenuClick('HealthAnalysis')}>
             <MdHealthAndSafety size={iconSize} />
-            <span className="text-2xl">Health Analysis</span>
+            <span className="text-2xl">General Analysis</span>
           </Link>
         </li>
         <li>
