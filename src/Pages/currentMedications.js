@@ -51,6 +51,7 @@ const CurrentMedications = () => {
             <h3 className="text-xl font-medium">{medication.medicine_name}</h3>
             <p>Duration: {medication.duration} days</p>
             <p>Meal Time: {medication.meal_time}</p>
+            <p>Timing: {`${medication.breakfast ? 1 : 0} + ${medication.lunch ? 1 : 0} + ${medication.dinner ? 1 : 0}`} </p>
             {/* Add more medication details as needed */}
           </div>
         ))}
